@@ -57,6 +57,7 @@ func (c *LevelDbKVS) query(typ string, slice interface{}, name, term string, off
 	}
 	count := 0
 	iter.Last()
+	iter.Next()
 	for iter.Prev() {
 		if limit >= 0 && count >= limit {
 			break

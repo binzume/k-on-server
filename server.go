@@ -69,6 +69,18 @@ func initHttpd(db KVS) *gin.Engine {
 		c.JSON(http.StatusOK, gin.H{"_status": 201, "message": "created", "device": newdev})
 	})
 
+	r.GET("/stats", func(c *gin.Context) {
+		offset := parseIntDefault(c.Query("offset"), 0)
+		limit := parseIntDefault(c.Query("limit"), 100)
+
+		var devNameFields []*struct {
+			Name   string   `json:"name"`
+			Fields []string `json:"fields"`
+		}
+		_, _ = db.query("device", &devNameFields, "", "", offset, limit)
+		c.JSON(http.StatusOK, gin.H{"_status": 200, "stats": devNameFields})
+	})
+
 	r.GET("/stats/:device/values", func(c *gin.Context) {
 		dev := &Device{}
 		found, _ := db.get("device", c.Param("device"), dev)
@@ -80,7 +92,7 @@ func initHttpd(db KVS) *gin.Engine {
 		limit := parseIntDefault(c.Query("limit"), 100)
 		values := []*map[string]float64{}
 		_, _ = db.query("values:"+dev.Name, &values, "", "", offset, limit)
-		c.JSON(http.StatusOK, gin.H{"_status": 200, "fields": dev.Fields, "values": values})
+		c.JSON(http.StatusOK, gin.H{"_status": 200, "fields": dev.Fields, "description": dev.Description, "values": values})
 	})
 
 	r.GET("/stats/:device/values/latest", func(c *gin.Context) {
