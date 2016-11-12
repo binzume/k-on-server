@@ -14,21 +14,25 @@
 
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <script type="text/javascript">
-      google.charts.load('current', {'packages':['line']});
+      google.charts.load('current', {'packages':['line'], 'language': 'ja'});
       google.charts.setOnLoadCallback(drawChart);
 
 var hours = 24;
+var devName = "_default";
+if (location.search.match(/^\?\w+$/)) {
+    devName = location.search.substr(1);
+}
 
     function drawChart() {
 
       var jsonData = $.ajax({
-          url: "stats/_default/values?limit=" + (hours * 12),
+          url: "stats/"+devName+"/values?limit=" + (hours * 12),
           dataType: "json",
           cache : false
-      }).done(function(data){
+      }).done(function(result){
           var rows = [];
-          for (var i=0;i <data.values.length; i++) {
-          	var d = data.values[i];
+          for (var i=0;i <result.values.length; i++) {
+          	var d = result.values[i];
           	rows.push([new Date(d['_timestamp']), d['temp'], d['humid']]);
           }
       var data = new google.visualization.DataTable();
@@ -40,7 +44,7 @@ var hours = 24;
 
       var options = {
         chart: {
-          title: 'k-on graph'
+          title: 'k-on graph : ' + result.description
         },
         height: 500,
         series: {
@@ -51,8 +55,8 @@ var hours = 24;
         axes: {
           // Adds labels to each axis; they don't have to match the axis names.
           y: {
-            Temp: {label: 'Temp(Celsius)', range:{min:10, max:35}},
-            Humid: {label: 'Humidity(%)',range:{min:0, max:100}}
+            Temp: {label: 'Temp(Celsius)', range:{min:10, max:35}, format:{pattern:'##.##'}},
+            Humid: {label: 'Humidity(%)',range:{min:0, max:100}, format:{pattern:'##.#\'%\''}}
           }
         }
       };
@@ -97,7 +101,7 @@ $(document).ready(function(){
   <div class="mdl-layout__drawer">
     <span class="mdl-layout-title">k-on Graph</span>
     <nav class="mdl-navigation">
-      <a class="mdl-navigation__link" href="">13F-01(default)</a>
+      <a class="mdl-navigation__link" href="?_default">13F-01(default)</a>
     </nav>
   </div>
   <main class="mdl-layout__content">

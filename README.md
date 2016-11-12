@@ -4,14 +4,16 @@
 
 - k-on = 計温
 - 値の取得には認証かかっていません
-
+- データストアはLevelDB(ローカルファイル)とElasticsearchが使える気がします
 
 # Usage
 
-T.B.D.
-
+```bash
 go get github.com/binzume/k-on-server
-
+cd $GOPATH/src/github.com/binzume/k-on-server
+make start
+open http://localhost:14201/
+```
 
 # API
 
