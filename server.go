@@ -13,10 +13,11 @@ import (
 )
 
 type Device struct {
-	Name        string   `json:"name"`
-	Description string   `json:"description"`
-	Fields      []string `json:"fields"`
-	Secret      string   `json:"secret"`
+	Name         string   `json:"name"`
+	Description  string   `json:"description"`
+	Fields       []string `json:"fields"`
+	Secret       string   `json:"secret"`
+	DisplayOrder int      `json:"display_order"`
 }
 
 func (d *Device) Validate() (bool, string) {
@@ -45,7 +46,12 @@ func initHttpd(db KVS) *gin.Engine {
 	})
 
 	r.POST("/device", func(c *gin.Context) {
-		newdev := &Device{c.PostForm("name"), c.PostForm("description"), strings.Split(c.PostForm("fields"), ","), c.PostForm("secret")}
+		newdev := &Device{
+			c.PostForm("name"),
+			c.PostForm("description"),
+			strings.Split(c.PostForm("fields"), ","),
+			c.PostForm("secret"),
+			parseIntDefault(c.PostForm("display_order"), 0)}
 		ok, msg := newdev.Validate()
 		if !ok {
 			c.JSON(http.StatusNotFound, gin.H{"_status": 400, "message": msg})
@@ -103,7 +109,7 @@ func initHttpd(db KVS) *gin.Engine {
 			return
 		}
 		values := []*map[string]float64{}
-		_, _ = db.query("value:"+dev.Name, &values, "", "", 0, 1)
+		_, _ = db.query("values:"+dev.Name, &values, "", "", 0, 1)
 		c.JSON(http.StatusOK, gin.H{"_status": 200, "values": values[0]})
 	})
 
@@ -146,23 +152,6 @@ func initHttpd(db KVS) *gin.Engine {
 		}
 		_, _ = db.del("values", dev.Name+":"+c.Param("timestamp"))
 		c.JSON(http.StatusOK, gin.H{"_status": 200, "message": "deleted"})
-	})
-
-	// deprecated
-	r.GET("/stats/:device/values/addstat", func(c *gin.Context) {
-		timestamp, _ := strconv.ParseInt(c.DefaultQuery("_timestamp", "0"), 10, 64)
-		if timestamp == 0 {
-			timestamp = time.Now().UnixNano() / int64(time.Millisecond)
-		}
-		temp, _ := strconv.ParseFloat(c.Query("temp"), 64)
-		humid, _ := strconv.ParseFloat(c.Query("humid"), 64)
-		log.Printf("stat %d %f %f", timestamp, temp, humid)
-		db.store("values", c.Param("device")+":"+strconv.FormatInt(timestamp, 10), map[string]interface{}{
-			"_timestamp": timestamp,
-			"temp":       temp,
-			"humid":      humid,
-		})
-		c.JSON(http.StatusOK, gin.H{"status": "ok", "temp": temp})
 	})
 
 	r.Static("/static", "/static")
