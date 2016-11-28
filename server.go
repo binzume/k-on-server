@@ -80,8 +80,10 @@ func initHttpd(db KVS) *gin.Engine {
 		limit := parseIntDefault(c.Query("limit"), 100)
 
 		var devNameFields []*struct {
-			Name   string   `json:"name"`
-			Fields []string `json:"fields"`
+			Name         string   `json:"name"`
+			Fields       []string `json:"fields"`
+			Description  string   `json:"description"`
+			DisplayOrder int      `json:"display_order"`
 		}
 		_, _ = db.query("device", &devNameFields, "", "", offset, limit)
 		c.JSON(http.StatusOK, gin.H{"_status": 200, "stats": devNameFields})
@@ -154,9 +156,9 @@ func initHttpd(db KVS) *gin.Engine {
 		c.JSON(http.StatusOK, gin.H{"_status": 200, "message": "deleted"})
 	})
 
-	r.Static("/static", "/static")
-	r.Static("/css", "/static/css")
-	r.Static("/js", "/static/js")
+	r.Static("/static", "./static")
+	r.Static("/css", "./static/css")
+	r.Static("/js", "./static/js")
 	r.GET("/", func(c *gin.Context) {
 		c.File("./static/index.html")
 	})
