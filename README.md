@@ -1,10 +1,13 @@
 # k-on server
 
-センサの値を記録したり，グラフ表示する為のサーバ．
+センサの値を記録したり，グラフ表示する為のWebサーバ．
 
 - k-on = 計温
 - 値の取得には認証かかっていません
 - データストアはLevelDB(ローカルファイル)とElasticsearchが使える気がします
+
+![chart sample](doc/images/chart01.png)
+
 
 # Usage
 
@@ -76,6 +79,10 @@ curl http://localhost:8080/stats/_default/values
 ## GET /stats/:dev_name/values/latest
 
 Return latest value.
+
+## DELETE /stats/:dev_name/values/:timestamp
+
+Delete value.
 
 
 # License
