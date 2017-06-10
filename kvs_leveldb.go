@@ -1,11 +1,11 @@
 package main
 
 import (
-	// "github.com/gin-gonic/contrib/static"
 	"encoding/json"
+	"reflect"
+
 	"github.com/syndtr/goleveldb/leveldb"
 	"github.com/syndtr/goleveldb/leveldb/util"
-	"reflect"
 )
 
 type LevelDbKVS struct {
@@ -39,8 +39,9 @@ func (c *LevelDbKVS) get(typ string, id string, ent interface{}) (found bool, er
 
 func (c *LevelDbKVS) store(typ string, id string, ent interface{}) (created bool, err error) {
 	s, _ := json.Marshal(ent)
+	has, _ := c.leveldb.Has([]byte(typ+":"+id), nil)
 	err = c.leveldb.Put([]byte(typ+":"+id), s, nil)
-	return false, err
+	return !has, err
 }
 
 func (c *LevelDbKVS) del(typ string, id string) (found bool, err error) {

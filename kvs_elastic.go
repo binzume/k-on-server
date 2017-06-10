@@ -2,10 +2,12 @@ package main
 
 import (
 	"encoding/json"
-	"github.com/olivere/elastic"
 	"reflect"
+
+	elastic "gopkg.in/olivere/elastic.v2"
 )
 
+// ElasticKVS
 type ElasticKVS struct {
 	IndexName string
 	Client    *elastic.Client
