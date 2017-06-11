@@ -40,8 +40,6 @@ func (c *ElasticKVS) Initialize() error {
 		},
 	}
 
-	// _, err0 := c.Client.DeleteIndex(c.IndexName).Do()
-
 	exists, err := c.Client.IndexExists(c.IndexName).Do()
 	if err != nil {
 		return err
@@ -51,6 +49,11 @@ func (c *ElasticKVS) Initialize() error {
 		return err1
 	}
 	return nil
+}
+
+func (c *ElasticKVS) ClearAll() error {
+	_, err := c.Client.DeleteIndex(c.IndexName).Do()
+	return err
 }
 
 func (c *ElasticKVS) get(typ string, id string, ent interface{}) (found bool, err error) {
@@ -74,6 +77,9 @@ func (c *ElasticKVS) store(typ string, id string, ent interface{}) (created bool
 		Id(id).
 		BodyJson(ent).
 		Do()
+	if err != nil {
+		return false, err
+	}
 	return result.Created, err
 }
 
@@ -82,6 +88,9 @@ func (c *ElasticKVS) del(typ string, id string) (found bool, err error) {
 		Index(c.IndexName).Type(typ).
 		Id(id).
 		Do()
+	if err != nil {
+		return false, err
+	}
 	return result.Found, err
 }
 
@@ -97,14 +106,14 @@ func appendSlice(slice interface{}, searchResult *elastic.SearchResult) {
 }
 
 func (c *ElasticKVS) query(typ string, slice interface{}, name, term string, offset, limit int) (result interface{}, err error) {
-	var query elastic.Query = nil
+	var query elastic.Query
 	if name != "" {
 		query = elastic.NewTermQuery(name, term)
 	}
-	return c.query_internal(typ, slice, query, "", offset, limit)
+	return c.queryInternal(typ, slice, query, "", offset, limit)
 }
 
-func (c *ElasticKVS) query_internal(typ string, slice interface{}, q elastic.Query, sortField string, offset, limit int) (result *elastic.SearchResult, err error) {
+func (c *ElasticKVS) queryInternal(typ string, slice interface{}, q elastic.Query, sortField string, offset, limit int) (result *elastic.SearchResult, err error) {
 	search := c.Client.Search().
 		Index(c.IndexName).Type(typ).
 		Query(q).

@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"os"
 	"reflect"
 
 	"github.com/syndtr/goleveldb/leveldb"
@@ -9,12 +10,14 @@ import (
 )
 
 type LevelDbKVS struct {
-	leveldb *leveldb.DB
+	leveldb  *leveldb.DB
+	datapath string
+	sep      string
 }
 
 func NewLevelDbKVS(path string) *LevelDbKVS {
 	db, _ := leveldb.OpenFile(path, nil)
-	return &LevelDbKVS{db}
+	return &LevelDbKVS{db, path, ":"}
 }
 
 func (c *LevelDbKVS) Close() error {
@@ -25,8 +28,19 @@ func (c *LevelDbKVS) Initialize() error {
 	return nil
 }
 
+func (c *LevelDbKVS) ClearAll() error {
+	_ = c.leveldb.Close()
+	err := os.RemoveAll(c.datapath)
+	if err != nil {
+		return err
+	}
+	// reopen
+	c.leveldb, err = leveldb.OpenFile(c.datapath, nil)
+	return err
+}
+
 func (c *LevelDbKVS) get(typ string, id string, ent interface{}) (found bool, err error) {
-	data, err := c.leveldb.Get([]byte(typ+":"+id), nil)
+	data, err := c.leveldb.Get([]byte(typ+c.sep+id), nil)
 	if err == leveldb.ErrNotFound {
 		return false, nil
 	}
@@ -39,19 +53,19 @@ func (c *LevelDbKVS) get(typ string, id string, ent interface{}) (found bool, er
 
 func (c *LevelDbKVS) store(typ string, id string, ent interface{}) (created bool, err error) {
 	s, _ := json.Marshal(ent)
-	has, _ := c.leveldb.Has([]byte(typ+":"+id), nil)
-	err = c.leveldb.Put([]byte(typ+":"+id), s, nil)
+	has, _ := c.leveldb.Has([]byte(typ+c.sep+id), nil)
+	err = c.leveldb.Put([]byte(typ+c.sep+id), s, nil)
 	return !has, err
 }
 
 func (c *LevelDbKVS) del(typ string, id string) (found bool, err error) {
-	err = c.leveldb.Delete([]byte(typ+":"+id), nil)
+	err = c.leveldb.Delete([]byte(typ+c.sep+id), nil)
 	return true, err
 }
 
 func (c *LevelDbKVS) query(typ string, slice interface{}, name, term string, offset, limit int) (list interface{}, err error) {
 	tt := reflect.ValueOf(slice).Elem().Type().Elem().Elem()
-	iter := c.leveldb.NewIterator(util.BytesPrefix([]byte(typ+":")), nil)
+	iter := c.leveldb.NewIterator(util.BytesPrefix([]byte(typ+c.sep)), nil)
 	listv := reflect.ValueOf(slice).Elem()
 	if listv.Kind() != reflect.Slice {
 		panic("not slice")
