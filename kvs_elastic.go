@@ -26,17 +26,19 @@ func (c *ElasticKVS) Close() error {
 }
 
 func (c *ElasticKVS) Initialize() error {
-	indexBody := `{
-    "template": "*",
-    "mappings": {
-    "_default_": {
-    "_source": { "compress": true },
-    "properties" : {
-    "id" : { "type" : "string", "index" : "not_analyzed" }
-    }
-    }
-    }
-    }`
+	type H map[string]interface{}
+	notAnalyzed := H{"type": "string", "index": "not_analyzed"}
+	indexTempalte := H{
+		"template": "*",
+		"mappings": H{
+			"_default_": H{
+				"_source": H{"compress": true},
+				"properties": H{
+					"id": notAnalyzed,
+				},
+			},
+		},
+	}
 
 	// _, err0 := c.Client.DeleteIndex(c.IndexName).Do()
 
@@ -45,7 +47,7 @@ func (c *ElasticKVS) Initialize() error {
 		return err
 	}
 	if !exists {
-		_, err1 := c.Client.CreateIndex(c.IndexName).BodyString(indexBody).Do()
+		_, err1 := c.Client.CreateIndex(c.IndexName).BodyJson(indexTempalte).Do()
 		return err1
 	}
 	return nil
@@ -94,7 +96,7 @@ func appendSlice(slice interface{}, searchResult *elastic.SearchResult) {
 	reflect.ValueOf(slice).Elem().Set(s)
 }
 
-func (c *ElasticKVS) query(typ string, slice interface{}, name, term string, offset, limit int) (result *elastic.SearchResult, err error) {
+func (c *ElasticKVS) query(typ string, slice interface{}, name, term string, offset, limit int) (result interface{}, err error) {
 	var query elastic.Query = nil
 	if name != "" {
 		query = elastic.NewTermQuery(name, term)

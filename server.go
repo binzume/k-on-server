@@ -4,12 +4,13 @@ import (
 	// "github.com/gin-gonic/contrib/static"
 	"flag"
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
 type Device struct {
@@ -169,12 +170,9 @@ func initHttpd(db KVS) *gin.Engine {
 func main() {
 	port := flag.Int("p", 8080, "http port")
 	dbtype := flag.String("t", "leveldb", "datastore type")
-	dbpath := flag.String("d", "testdb", "datastore uri or path")
+	dbpath := flag.String("d", "data", "datastore uri(s) or path")
 	flag.Parse()
-	if *dbtype != "leveldb" {
-		log.Printf("not supported :%v", dbtype)
-	}
-	db := NewLevelDbKVS(*dbpath)
+	db, _ := NewKVS(*dbtype, *dbpath)
 	defer db.Close()
 	gin.SetMode(gin.ReleaseMode)
 	log.Printf("start server. port: %d", *port)
