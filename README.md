@@ -87,6 +87,4 @@ Delete value.
 
 # License
 
-T.B.D.
-
-
+MIT license
