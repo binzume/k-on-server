@@ -157,6 +157,33 @@ func initHttpd(db KVS) *gin.Engine {
 		c.JSON(http.StatusOK, gin.H{"_status": 200, "message": "deleted"})
 	})
 
+	// Prometheus metrics
+	r.GET("/metrics", func(c *gin.Context) {
+		var devs []*struct {
+			Name         string   `json:"name"`
+			Fields       []string `json:"fields"`
+			Description  string   `json:"description"`
+			DisplayOrder int      `json:"display_order"`
+		}
+		_, _ = db.query("device", &devs, "", "", 0, 10000)
+		res := ""
+		for _, dev := range devs {
+			values := []*map[string]float64{}
+			_, _ = db.query("values:"+dev.Name, &values, "", "", 0, 1)
+			for k, v := range *values[0] {
+				if k == "_timestamp" {
+					continue
+				}
+				res = res + "k_on_" + k + "{devide=\"" + dev.Name + "\"} " + fmt.Sprint(v)
+				if (*values[0])["_timestamp"] != 0.0 {
+					res += " " + fmt.Sprint(int((*values[0])["_timestamp"]))
+				}
+				res = res + "\n"
+			}
+		}
+		c.Data(http.StatusOK, "text/plain", []byte(res))
+	})
+
 	r.Static("/static", "./static")
 	r.Static("/css", "./static/css")
 	r.Static("/js", "./static/js")

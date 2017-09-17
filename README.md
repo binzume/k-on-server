@@ -5,6 +5,7 @@
 - k-on = 計温
 - 値の取得には認証かかっていません
 - データストアはLevelDB(ローカルファイル)とElasticsearchが使える気がします
+- [Prometheus](https://prometheus.io/) でのmetricsの取得もできます
 
 ![chart sample](doc/images/chart01.png)
 
@@ -84,6 +85,9 @@ Return latest value.
 
 Delete value.
 
+## GET /metrics
+
+Metrics for Prometheus.
 
 # License
 
