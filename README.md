@@ -19,6 +19,14 @@ make start
 open http://localhost:14201/
 ```
 
+### Docker
+
+```
+./build-on-docker.sh
+docker run -d -v /path_to_data/data:/data -p 8080:8080 k-on-server
+```
+
+
 # API
 
 json api.

@@ -1,5 +1,7 @@
 server.exe
 server
 data/
-
+_go/
+docker/*
+!docker/Dockerfile
 .vscode
