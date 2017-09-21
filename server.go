@@ -174,7 +174,7 @@ func initHttpd(db KVS) *gin.Engine {
 				if k == "_timestamp" {
 					continue
 				}
-				res = res + "k_on_" + k + "{devide=\"" + dev.Name + "\"} " + fmt.Sprint(v)
+				res = res + "k_on_" + k + "{device=\"" + dev.Name + "\"} " + fmt.Sprint(v)
 				if (*values[0])["_timestamp"] != 0.0 {
 					res += " " + fmt.Sprint(int((*values[0])["_timestamp"]))
 				}
