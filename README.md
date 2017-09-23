@@ -10,21 +10,37 @@
 ![chart sample](doc/images/chart01.png)
 
 
-# Usage
+# Get Started
 
-```bash
+## Build
+``` bash
 go get github.com/binzume/k-on-server
 cd $GOPATH/src/github.com/binzume/k-on-server
-make start
-open http://localhost:14201/
+go build
+./k-on-server -p 8080
+# open http://localhost:8080/
 ```
 
 ### Docker
 
-```
+``` bash
 ./build-on-docker.sh
-docker run -d -v /path_to_data/data:/data -p 8080:8080 k-on-server
+docker run -d -v /path_to_data_dir:/data -p 8080:8080 k-on-server
 ```
+
+## Request samples
+
+``` bash
+curl -X POST http://localhost:8080/device --data "name=test&description=hoge&fields=temp,humid&secret=test"
+curl -X POST http://localhost:8080/stats/test/values --data "temp=1.0&humid=40.5&_secret=test"
+curl -X POST http://localhost:8080/stats/test/values --data "temp=2.0&humid=0&_secret=test"
+curl -X POST http://localhost:8080/stats/test/values --data "temp=2.71&humid=3.14&_secret=test&_timestamp=1500222333000"
+curl -X GET "http://localhost:8080/stats/test/values?offset=0&limit=10"
+curl -X GET "http://localhost:8080/stats/test/values/latest"
+curl -X DELETE "http://localhost:8080/stats/test/values/1500222333000?_secret=test"
+```
+
+## Register Data
 
 
 # API
